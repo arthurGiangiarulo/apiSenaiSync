@@ -27,11 +27,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
-                .requestMatchers("/api/colaborador/**").hasAuthority("ROLE_COLABORADOR")
-                .requestMatchers("/api/usuario/**").hasAuthority("ROLE_USUARIO_SOMENTE_LEITURA")
+            .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
+            .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MASTER")
+            .requestMatchers("/api/colaborador/**").hasAnyAuthority("ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
+            .requestMatchers("/api/reader/**").hasAnyAuthority("ROLE_USUARIO_SOMENTE_LEITURA", "ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
+            .requestMatchers("/api/public/**").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(Customizer.withDefaults());
