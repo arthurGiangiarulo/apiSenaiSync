@@ -4,6 +4,5 @@ public enum Role {
     MASTER,
     ADMIN,
     COLABORADOR,
-    USUARIO_SOMENTE_LEITURA;
 }
 
