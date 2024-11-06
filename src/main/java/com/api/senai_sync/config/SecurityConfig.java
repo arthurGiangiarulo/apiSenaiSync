@@ -10,13 +10,17 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter;
 
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -27,14 +31,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
-            .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MASTER")
-            .requestMatchers("/api/colaborador/**").hasAnyAuthority("ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
-            .requestMatchers("/api/reader/**").hasAnyAuthority("ROLE_USUARIO_SOMENTE_LEITURA", "ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
-            .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
+                .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MASTER")
+                .requestMatchers("/api/colaborador/**").hasAnyAuthority("ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
+                .requestMatchers("/api/reader/**").hasAnyAuthority("ROLE_USUARIO_SOMENTE_LEITURA", "ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
+                .requestMatchers("/api/public/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .httpBasic(Customizer.withDefaults());
+            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
