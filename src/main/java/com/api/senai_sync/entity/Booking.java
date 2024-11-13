@@ -23,7 +23,10 @@ public class Booking {
     @ManyToOne
     private Room room;
 
+    @Column (nullable = false)
     private LocalDateTime startTime;
+
+    @Column(nullable = false)
     private LocalDateTime endTime;
 
     @Column(nullable = false, updatable = false) // Não pode ser atualizado apos a criaçao
