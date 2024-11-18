@@ -38,8 +38,13 @@ public class RoomController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_MASTER', 'ROLE_ADMIN')")
     public ResponseEntity<Room> createRoom(@RequestBody Room room) {
-        Room createdRoom = roomService.createRoom(room);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
+        try {
+            Room createdRoom = roomService.createRoom(room);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // update Room

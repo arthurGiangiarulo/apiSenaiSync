@@ -28,4 +28,7 @@ public class Room {
 
     @Column
     private String equipment;
+
+    @Column ( nullable = false)
+    private String imgUrl;
 }

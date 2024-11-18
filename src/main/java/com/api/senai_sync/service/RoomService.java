@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 
 import com.api.senai_sync.entity.Room;
 import com.api.senai_sync.repository.RoomRepository;
+import com.api.senai_sync.exception.RoomCreationException;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 public class RoomService {
@@ -25,7 +25,12 @@ public class RoomService {
     }
 
     public Room createRoom(Room room) {
-        return roomRepository.save(room);
+        try {
+            return roomRepository.save(room);
+
+        } catch (Exception e) {
+           throw new RoomCreationException("Erro ao criar sala: " + e.getMessage(), e);
+        }
     }
 
     public Room updateRoom(Long id, Room updatedRoom) {
