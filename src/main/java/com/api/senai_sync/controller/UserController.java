@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.senai_sync.entity.User;
 import com.api.senai_sync.service.UserService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -19,14 +23,60 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // Criar um novo usuário
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_MASTER')")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User createdUser = userService.saveUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    // Buscar todos os usuários
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    // Buscar um usuário por ID
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    // Buscar um usuário por nome de usuário (username)
+    @GetMapping("/username/{username}")
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+        Optional<User> user = userService.getUserByUsername(username);
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    // Atualizar um usuário
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
         try {
-            userService.saveUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user); // OK após criação
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Retorno com erro
+            User updated = userService.updateUser(id, updatedUser);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // Deletar um usuário
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_MASTER' ,  'ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        if (user.isPresent()) {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }

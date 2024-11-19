@@ -1,8 +1,10 @@
 package com.api.senai_sync.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 public class BookingController {
 
+    @Autowired
     private BookingService bookingService;
-    
+
     // Endpoint público para listar todas as reservas - acessível para todos
     @GetMapping
     public ResponseEntity<List<Booking>> getAllBookings() {
@@ -34,7 +37,7 @@ public class BookingController {
     }
 
     // Endpoint para criar uma reserva
-    @PreAuthorize("hasAuthority('ROLE_PROFESSOR' , 'ROLE_MASTER' , 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_COLABORADOR' , 'ROLE_MASTER' , 'ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
         String currentUsername = getCurrentUsername();
@@ -44,7 +47,7 @@ public class BookingController {
     }
 
     // Endpoint para atualizar uma reserva
-    @PreAuthorize("hasAuthority('ROLE_PROFESSOR' , 'ROLE_MASTER' , 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_COLABORADOR' , 'ROLE_MASTER' , 'ROLE_ADMIN')")
     @PutMapping("/{bookingId}")
     public ResponseEntity<Booking> updateBooking(@PathVariable Long bookingId, @RequestBody Booking booking) {
         Optional<Booking> existingBooking = bookingService.getBookingById(bookingId);
@@ -57,19 +60,27 @@ public class BookingController {
     }
 
     // Endpoint para deletar uma reserva
-    @PreAuthorize("hasAuthority('ROLE_PROFESSOR' , 'ROLE_MASTER' , 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_COLABORADOR') or hasAuthority('ROLE_MASTER') or hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{bookingId}")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long bookingId) {
         Optional<Booking> existingBooking = bookingService.getBookingById(bookingId);
 
-        if (existingBooking.isPresent() && isBookingOwner(existingBooking.get())) {
-            bookingService.deleteBooking(bookingId);
-            return ResponseEntity.noContent().build();
+        if (existingBooking.isPresent()) {
+            // Verifica se o usuário logado é o criador ou se ele tem um dos papéis
+            // autorizados
+            if (isBookingOwner(existingBooking.get()) || isUserAdminOrMaster()) {
+                bookingService.deleteBooking(bookingId);
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Caso não seja o dono ou admin/master
+            }
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Caso a reserva não exista
     }
 
-    // Método auxiliar para verificar se o usuário autenticado é o criador da reserva
+    // Método auxiliar para verificar se o usuário autenticado é o criador da
+    // reserva
     private boolean isBookingOwner(Booking booking) {
         String currentUsername = getCurrentUsername();
         return booking.getCreatedBy().equals(currentUsername);
@@ -83,5 +94,12 @@ public class BookingController {
         } else {
             return principal.toString();
         }
+    }
+
+    private boolean isUserAdminOrMaster() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_MASTER")
+                        || grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
