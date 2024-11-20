@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,8 +28,8 @@ public class Room {
     private int seatAmount;
 
     @Column
-    private String equipment;
+    private List<String> equipment;
 
-    @Column ( nullable = false)
+    @Column 
     private String imgUrl;
 }

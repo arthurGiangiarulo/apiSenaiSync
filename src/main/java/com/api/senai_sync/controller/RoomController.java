@@ -12,11 +12,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/rooms")
+
 public class RoomController {
     @Autowired
     private RoomService roomService;
+
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
 
     // Ver todas as salas (public)
     @GetMapping
@@ -35,21 +41,22 @@ public class RoomController {
 
     // criar Salas
     // Só o master e o admin podem criar salas
-    @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_MASTER', 'ROLE_ADMIN')")
+    @PostMapping("/create")
+     @PreAuthorize("hasAnyAuthority('ROLE_MASTER', 'ROLE_ADMIN')")
     public ResponseEntity<Room> createRoom(@RequestBody Room room) {
+        System.out.println("Recebendo sala: " + room);
         try {
             Room createdRoom = roomService.createRoom(room);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
 
         } catch (Exception e) {
+            System.err.println("Erro ao criar sala: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     // update Room
     // Só o master e o admin podem atualizar salas
-
     @PreAuthorize("hasAnyAuthority('ROLE_MASTER', 'ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Room> updateRoom(@PathVariable Long id, @RequestBody Room updatedRoom) {
@@ -62,7 +69,6 @@ public class RoomController {
     }
 
     // Só o master e o admin podem deletar salas
-
     @PreAuthorize("hasAnyAuthority('ROLE_MASTER', 'ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
