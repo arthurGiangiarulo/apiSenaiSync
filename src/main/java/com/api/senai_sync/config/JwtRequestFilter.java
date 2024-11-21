@@ -39,11 +39,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-        // Se o token é válido e o usuário ainda não está autenticado no contexto de segurança
+        // Se o token é válido e o usuário ainda não está autenticado no contexto de
+        // segurança
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.validateToken(jwt, username)) {
-                UsernamePasswordAuthenticationToken authToken = 
-                        new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null,
+                        Collections.emptyList());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

@@ -37,3 +37,5 @@ public class AuthController {
         return ResponseEntity.ok(jwtToken);
     }
 }
+
+// eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXN0ZXIiLCJleHAiOjE3MzIwMDM4ODMsImlhdCI6MTczMTk2Nzg4M30.pStsoEmPcDuOkyYsiYGtIHw0tr18UyguBGw7iFWxNEI
