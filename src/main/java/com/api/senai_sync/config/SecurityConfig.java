@@ -38,14 +38,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/rooms/**").authenticated()
-                        .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
-                        .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MASTER")
-                        .requestMatchers("/api/colaborador/**")
-                        .hasAnyAuthority("ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
-                        .requestMatchers("/api/reader/**")
-                        .hasAnyAuthority("ROLE_USUARIO_SOMENTE_LEITURA", "ROLE_COLABORADOR", "ROLE_ADMIN",
-                                "ROLE_MASTER")
+                        // .requestMatchers("/rooms/**").authenticated()
+                        // .requestMatchers("/api/master/**").hasAuthority("ROLE_MASTER")
+                        // .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MASTER")
+                        // .requestMatchers("/api/colaborador/**")
+                        // .hasAnyAuthority("ROLE_COLABORADOR", "ROLE_ADMIN", "ROLE_MASTER")
+                        // .requestMatchers("/api/reader/**")
+                        // .hasAnyAuthority("ROLE_USUARIO_SOMENTE_LEITURA", "ROLE_COLABORADOR", "ROLE_ADMIN",
+                        //         "ROLE_MASTER")
                         .requestMatchers("/api/public/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
